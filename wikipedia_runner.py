@@ -3,29 +3,19 @@ from grafo import *
 import requests
 from bs4 import BeautifulSoup
 from collections import deque
-
 from funciones_grafo import camino_minimo_bfs
 
+MAIN_URL = "https://es.wikipedia.org"
 ORIGIN = "/wiki/Nueva_York"
 DESTINY = "/wiki/Max_Verstappen"
 
-def filtro_enlace(enlace):
+def obtener_enlaces_articulo(link): 
 
-    if("wiki" in enlace and "Anexo" not in enlace and "https" not in enlace and "Usuario" not in enlace and "Especial" not in enlace 
-    and "#" not in enlace and "index.php" not in enlace and "Archivo" not in enlace and ".org" not in enlace and "Wikipedia" not in enlace
-    and "Categor%C3%ADa" not in enlace and ".jpg" not in enlace):
-        return True
+    response = requests.get(link) 
 
-    return False
+    soup = BeautifulSoup(response.text, 'html.parser') 
 
-def obtener_enlaces_articulo(link): # Agregar a la funcion los filtros... eliminar links que sean inutiles para la red!!!
-    #opcion... limitar a unicamente los primeros 150 enlaces... los demas dejarlos... se hace muy grande el grafo y demasiado extensa la carga de la red...
-
-    response = requests.get(link) # Request al servidor de wikipedia, se obtiene la HTTP RESPONSE de dicha rquest...
-
-    soup = BeautifulSoup(response.text, 'html.parser') # Parsing el texto HTML de la response...
-
-    lista_ = (soup.find_all('a')) # Se obtienen todos los elementos del codigo HTML que cumplan con label "a"
+    lista_ = (soup.find_all('a')) 
 
     lista_final = []
     for link in lista_:
@@ -33,13 +23,13 @@ def obtener_enlaces_articulo(link): # Agregar a la funcion los filtros... elimin
         enlace = str(link.get('href'))
 
         if filtro_enlace(enlace):
-            lista_final.append(enlace) # Se obtiene el link de cada label...
+            lista_final.append(enlace)
 
-    return lista_final # MALA SOLUCION PARA BAJAR TIEMPO DE RESOLUCION slicear la lista de enlaces de un articulo...
+    return lista_final 
 
 def cargar_grafo(grafo : Grafo, origen): # ERROR
 
-    enlaces = obtener_enlaces_articulo("https://es.wikipedia.org" + origen)
+    enlaces = obtener_enlaces_articulo(MAIN_URL + origen)
 
     for enlace in enlaces:
         grafo.agregar_vertice(enlace)
